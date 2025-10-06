@@ -13,6 +13,7 @@
 - ? common pattern to run critical task in a thread, with signal masking
 - "signal delivery to threads" vs. "process" -> "Ctrl+C" targets the process group, ??? kernel chooses a thread, kernel needs to deliver signal to one thread in the process, it chooses a thread where the signal is not currently blocked.
 - Czy to że praktyką jest uruchamienie krytycznych tasków w nowym wątku w przypadku Pythona to strzał w kolano z powodu implementacji cpython "interpretera/run-time" który dostając ctrl-c do gółłwnego wątku odpala "shutdown" i jedzie po wszystkich wątkach?
+- ??? `ioctl()` `fcntl()`
 
 
 
