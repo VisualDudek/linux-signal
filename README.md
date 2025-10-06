@@ -14,7 +14,15 @@
 - "signal delivery to threads" vs. "process" -> "Ctrl+C" targets the process group, ??? kernel chooses a thread, kernel needs to deliver signal to one thread in the process, it chooses a thread where the signal is not currently blocked.
 - Czy to że praktyką jest uruchamienie krytycznych tasków w nowym wątku w przypadku Pythona to strzał w kolano z powodu implementacji cpython "interpretera/run-time" który dostając ctrl-c do gółłwnego wątku odpala "shutdown" i jedzie po wszystkich wątkach?
 - ??? `ioctl()` `fcntl()`
-
+- `SIGWINCH`
+- GOTCHA vvv zupełnie nie tak :) poniżej są tylko półprawdy, bash implements "wait and cooperative Exit" WCE
+- bash implementuje/istanluje `SIGWINCH` handler z flagą `SA_REASTART` This change was introduced in bash starting from version 4.4, where bash began installing its `SIGWINCH` signal handler with SA_RESTART to prevent it from interrupting open/read/write system calls.
+- ^^^ to ciekawe co się dzieje jak Python dostanie `SIGWINCH` ? z drugiej strony to bezsensu pytanie bo `SIGWINCH` ma tylko sens jeśli jest odpalony w terminalu a jak Python jest odpalony w terminlu to rachej przez bash/zsh
+- !!! coś tu się nie zgadza bo niby SIGINT też pod BSD behavior ma SA_RESTART. ???
+- ciekawe że zsh explicite ustawia `SA_INTERRUP` dla SunOS 4.X
+- when bash is interactive, each foreground job gets own process group !!! 
+- tty driver, kernel sends `SIGWINCH` only to foreground group
+- chech `man 7 man` for default signal action and numbering
 
 
 ## AAA
@@ -47,3 +55,29 @@ struct sigaction {
 - ^^^ **006a** `Event()` to coordinate between threads
 - ^^^ **006b** `.join()` duży minus to konieczność przekazania referencji do worker_thread
 - ^^^ **006c** Polling, wydaje mi się że tutaj minusem jest semi busy-waiting ALE chyba największy potencjał do skomplikowanych stanów aplikacji.
+- **007** tu się robi naprawdę ciekawie, wygląda to tak jakby `sleep` blokowoło SIGWINCH -> implementacja bash-a !!!
+- ^^^ bash source code `sig.c` pod koniec kodu:
+```c
+  /* Let's see if we can keep SIGWINCH from interrupting interruptible system
+     calls, like open(2)/read(2)/write(2) */
+#if defined (SIGWINCH)
+  if (sig == SIGWINCH)
+    act.sa_flags |= SA_RESTART;		/* XXX */
+#endif
+```
+- bash workaround:
+```bash
+sleep 30 &    # Background
+wait $!       # Builtin wait - immediately interruptible
+```
+- foreground process have diff. PGID, background will not rec. SIGWINCH **008**
+```sh
+./background_sigwinch
+
+./background_sigwinch &
+```
+- run below and resize window to see that SIGWINCH is deliverd to sleep but it is ignored
+```bash
+strace -e signal sleep 10
+```
+
