@@ -23,7 +23,12 @@
 - when bash is interactive, each foreground job gets own process group !!! 
 - tty driver, kernel sends `SIGWINCH` only to foreground group
 - chech `man 7 man` for default signal action and numbering
+- `clone()` modern fork
+- Ctrl+C (terminal generated `SIGINT`) kernel sends to entire process group BUT `kill -INT <pid>` (cmd line kill) sends only to specific PID only. BUT `kill -INT -<pid>` negative PID send to a process group. 
 
+
+## src
+- @YT "Pressing CTRL+D is NOT what you think!" by Gynvael
 
 ## AAA
 - PoC dlaczego "standard signals" miały drobne wady, **001** brak "queueing mechanism" 
@@ -80,4 +85,14 @@ wait $!       # Builtin wait - immediately interruptible
 ```bash
 strace -e signal sleep 10
 ```
-
+- `kernel/drivers/tty/n_tty.c`, `kill_pgrp()` sends the signal to every process that has process PGID. It doesn't target a specific PID first.
+```c
+static void __isig(int sig, struct tty_struct *tty)
+{
+	struct pid *tty_pgrp = tty_get_pgrp(tty);
+	if (tty_pgrp) {
+		kill_pgrp(tty_pgrp, sig, 1);
+		put_pid(tty_pgrp);
+	}
+}
+```
