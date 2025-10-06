@@ -43,3 +43,6 @@ struct sigaction {
 - **004** duży niuans "signal delivery to threads" vs. "process"
 - **005** signal masking działa na głównym wątku.
 - **006** workaround ^^^, eeee dalej nie zapobiega w 100% dokończenie critical task
+- ^^^ **006a** `Event()` to coordinate between threads
+- ^^^ **006b** `.join()` duży minus to konieczność przekazania referencji do worker_thread
+- ^^^ **006c** Polling, wydaje mi się że tutaj minusem jest semi busy-waiting ALE chyba największy potencjał do skomplikowanych stanów aplikacji.
