@@ -21,9 +21,9 @@
 - ^^^ to ciekawe co się dzieje jak Python dostanie `SIGWINCH` ? z drugiej strony to bezsensu pytanie bo `SIGWINCH` ma tylko sens jeśli jest odpalony w terminalu a jak Python jest odpalony w terminlu to rachej przez bash/zsh
 - !!! coś tu się nie zgadza bo niby SIGINT też pod BSD behavior ma SA_RESTART. ???
 - ciekawe że zsh explicite ustawia `SA_INTERRUP` dla SunOS 4.X
-- when bash is interactive, each foreground job gets own process group !!! 
+- when bash is interactive, each foreground (chyba background) job gets own process group !!! 
 - tty driver, kernel sends `SIGWINCH` only to foreground group
-- chech `man 7 man` for default signal action and numbering
+- check `man 7 man` for default signal action and numbering
 - `clone()` modern fork
 - Ctrl+C (terminal generated `SIGINT`) kernel sends to entire process group BUT `kill -INT <pid>` (cmd line kill) sends only to specific PID only. BUT `kill -INT -<pid>` negative PID send to a process group. 
 - `kill -INT <pid == 0>` send to all processes in current process group
@@ -122,3 +122,4 @@ putchar (int c)
 }
 ```
 - ^^^ GOTCHA nie wiedziałem że można w C typ result fn deklarować w osobnej lini
+- dla `trace=signal` to są jakieś jaja ile przechodzi sigaction oraz sigprocmask **013**
