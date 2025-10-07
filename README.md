@@ -7,6 +7,7 @@
 - src: `man 2 signal` in a multithreaded process the effects of `signal()` are unspecified.
 - `sigqueue(3)` jest library call a nie system call, jaka jest róznica?
 - ^^^ ciekawe co tak naprawde kryje się pod "mode switch" (user mode -> kernel mode) ???
+- use `ltrace` to see lib calls.
 - bash and python don't expose the RT-signal payload -> they implement only "legacy signal", no easy way to read complex C-level data structure `siginfo_t` that the kernel uses to deliver the payload.
 - python signal lib. handler function accepts two args. `(signum, frame)` what is frame?
 - GOTCHA `struct sigaction` dopuszcza simple signal handler "?legacy" aka "sa_handler" oraz advanced signal handler aka "sa_sigaction", implementujesz jeden!
@@ -123,3 +124,6 @@ putchar (int c)
 ```
 - ^^^ GOTCHA nie wiedziałem że można w C typ result fn deklarować w osobnej lini
 - dla `trace=signal` to są jakieś jaja ile przechodzi sigaction oraz sigprocmask **013**
+- ^^^ co tu się dzieje ??? jeśli: 
+    - `kill -INT <bash pid>` nic się nie dzieje
+    - `kill -TERM <bash pid>` bash jest terminowany ALE sleep dalej działa pod strace !!!
